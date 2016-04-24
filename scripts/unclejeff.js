@@ -12,12 +12,19 @@
 
         var componentManager = {
             get: function(name) {
-                if(this.components[name] === undefined) { throw this.type + ' undefined'; }
+                if(this.components[name] === undefined) { throw this.type + ' undefined - ' + name; }
                 return this.components[name];
             },
+            getMultiple: function(names) {
+                var result = [];
+                for (var i = 0; i < names.length; ++i) {
+                    result.push(this.get(names[i]));
+                }
+                return result;
+            },
             set: function(name, componentObj) {
-                if(this.components[name] !== undefined) { throw this.type + ' already defined'; }
-                this.components[name] = componentObj;
+                if(this.components[name] !== undefined) { throw this.type + ' already defined - ' + name; }
+                return this.components[name] = componentObj;
             }
         };
 
@@ -27,36 +34,56 @@
         });
     };
 
-    var ujClass = ujComponentManagerFactory(ujComponentType.class);
-    var ujModule = ujComponentManagerFactory(ujComponentType.module);
-    var ujEnum = ujComponentManagerFactory(ujComponentType.enum);
+    var ujClassComponentManager = ujComponentManagerFactory(ujComponentType.class);
+    var ujModuleComponentManager = ujComponentManagerFactory(ujComponentType.module);
+    var ujEnumComponentManager = ujComponentManagerFactory(ujComponentType.enum);
 
-    //Object.preventExtensions(ujModuleClass);
+    var classAccess = function() {};
+    var enumAccess = function() {};
+
+    var ujModule = {
+        class: classAccess,
+        enum: enumAccess
+    };
 
 
-    //ujModuleClass.set('jeff', {name: 'hhhh'});
-    ujClass.set('jeff', {name:'jeff'});
-    var m = ujModule.get('jeff');
-    console.log(m);
+    var moduleAccess = function(name, dependentModules) {
+        if(dependentModules !== undefined) {
+            return this.moduleComponentManager.set(name, Object.create(ujModule, { dependentModules: {value: dependentModules} }));
+        } else {
+            var module = this.moduleComponentManager.get(name);
+            if(module.dependentModuleRefs === undefined) {
+                module.dependentModuleRefs = this.moduleComponentManager.getMultiple(module.dependentModules);
+            }
+            return module;
+        }
+    };
+
+
+
+
+    var uj = {
+        module: moduleAccess
+    };
+
+    uj.moduleComponentManager = ujComponentManagerFactory(ujComponentType.module);
+
+    window['uj'] = uj;
 
 })();
 
+uj.module('module2', []);
+uj.module('module3', []);
+uj.module('module1', ['module2', 'module3']);
 
-var ujClass = function(name, classObj) {
-    if(classObj !== undefined) {
+var f1 = uj.module('module1');
+console.log(1, f1);
 
-    } else {
+var f2 = uj.module('module1');
+console.log(2, f2);
 
-    }
-};
-
-var ujModule = function(name, dependencies) {
-    return ujClass;
-};
-
-window['uj'] = {
-    module: ujModule
-};
+var f3 = uj.module('module2');
+console.log(3, f3);
 
 //Object.defineProperty(uj, "a", {
 //    value: 2,
@@ -67,10 +94,10 @@ window['uj'] = {
 
 
 
-var Bar = Object.create(uj);
+//var Bar = Object.create(uj);
 //Bar.constructor();
 
-Bar.module()();
+//Bar.module()();
 //console.log(Bar.a);
 
 
