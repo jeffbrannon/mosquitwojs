@@ -18,7 +18,7 @@
             getMultiple: function(names) {
                 var result = [];
                 for (var i = 0; i < names.length; ++i) {
-                    result.push(this.get(names[i]));
+                    result[i] = this.get(names[i]);
                 }
                 return result;
             },
@@ -34,14 +34,16 @@
         });
     };
 
-    var ujClassComponentManager = ujComponentManagerFactory(ujComponentType.class);
-    var ujModuleComponentManager = ujComponentManagerFactory(ujComponentType.module);
-    var ujEnumComponentManager = ujComponentManagerFactory(ujComponentType.enum);
+    //var ujClassComponentManager = ujComponentManagerFactory(ujComponentType.class);
+    //var ujModuleComponentManager = ujComponentManagerFactory(ujComponentType.module);
+    //var ujEnumComponentManager = ujComponentManagerFactory(ujComponentType.enum);
 
     var classAccess = function() {};
     var enumAccess = function() {};
 
     var ujModule = {
+        classComponentManager: ujComponentManagerFactory(ujComponentType.class),
+        enumComponentManager: ujComponentManagerFactory(ujComponentType.enum),
         class: classAccess,
         enum: enumAccess
     };
@@ -51,11 +53,7 @@
         if(dependentModules !== undefined) {
             return this.moduleComponentManager.set(name, Object.create(ujModule, { dependentModules: {value: dependentModules} }));
         } else {
-            var module = this.moduleComponentManager.get(name);
-            if(module.dependentModuleRefs === undefined) {
-                module.dependentModuleRefs = this.moduleComponentManager.getMultiple(module.dependentModules);
-            }
-            return module;
+            return this.moduleComponentManager.get(name);
         }
     };
 
@@ -63,18 +61,19 @@
 
 
     var uj = {
+        moduleComponentManager: ujComponentManagerFactory(ujComponentType.module),
         module: moduleAccess
     };
 
-    uj.moduleComponentManager = ujComponentManagerFactory(ujComponentType.module);
+
 
     window['uj'] = uj;
 
 })();
 
 uj.module('module2', []);
-uj.module('module3', []);
-uj.module('module1', ['module2', 'module3']);
+uj.module('module3', ['module2']);
+uj.module('module1', ['module3']);
 
 var f1 = uj.module('module1');
 console.log(1, f1);
@@ -82,7 +81,7 @@ console.log(1, f1);
 var f2 = uj.module('module1');
 console.log(2, f2);
 
-var f3 = uj.module('module2');
+var f3 = uj.module('module4');
 console.log(3, f3);
 
 //Object.defineProperty(uj, "a", {
