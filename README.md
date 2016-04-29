@@ -1,2 +1,2 @@
-# unclejeff
-A JavaScript modular dependency injection library
+# muuvyteJS
+A JavaScript modular library utilising OLOO (objects-linked-to-other-objects)
