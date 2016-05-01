@@ -2,23 +2,19 @@
 
     var modules = [];
 
-    var linkedObjectInstance = { };
+    //var linkedObjectInstance = { };
 
-    var findLinkedObject = function(name, self, includeToBeLinked) {
-        if(!self.$$linkedModules) {
-            self.$$linkedModules = linkedModules(self.$$moduleName);
-        }
-        for(var propt in self.$$linkedModules) {
-            result = self.$$linkedModules[propt].$$linkedObjects[name];
-            var result = self.$$linkedModules[propt].$$linkedObjects[name];
-            if(result) {
-                if(result.$$params.internal && self.$$moduleName != result.$$moduleName) muuvyte.throwError('linked object <' + name + '> defined as internal');
-                if(!includeToBeLinked && result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
-
-                return result;
+    var findLinkedObjectInModules = function(modules, objName, moduleName) {
+        var result = [];
+        for(var index in modules) {
+            var obj = modules[index].$$linkedObjects[objName];
+            if(obj && !((modules[index].$$moduleName != moduleName) && obj.$$params.internal)) {
+                result.push(obj);
             }
         }
-        muuvyte.throwError('linked object <' + name + '> undefined');
+        if(result.length === 0) muuvyte.throwError('linked object <' + objName + '> undefined');
+        if(result.length > 1) muuvyte.throwError('linked object <' + objName + '> ambiguous');
+        return result[0];
     };
 
     var linkedObject = function(name, linkedObj, params = {}) {
@@ -36,21 +32,18 @@
                 $$params: params,
                 $$moduleName: this.$$moduleName
             };
+        } else {
+            if(!this.$$instance) {
+                if(!this.$$linkedModules) {
+                    this.$$linkedModules = linkedModules(this.$$moduleName);
+                }
+                var result = findLinkedObjectInModules(this.$$linkedModules, name, this.$$moduleName);
+                if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
+                var baseLink= {};
+                this.$$instance = Object.assign(baseLink, result.$$linkedObject);
+            }
+            return this.$$instance;
         }
-
-        return findLinkedObject(name, this);
-
-//        for(var propt in this.$$linkedModules) {
-//            result = this.$$linkedModules[propt].$$linkedObjects[name];
-//            var result = this.$$linkedModules[propt].$$linkedObjects[name];
-//            if(result) {
-//                if(result.$$params.internal && this.$$moduleName != result.$$moduleName) muuvyte.throwError('linked object <' + name + '> defined as internal');
-//                if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
-//
-//                return result;
-//            }
-//        }
-//        muuvyte.throwError('linked object <' + name + '> undefined');
     }
 
     var linkedModules = function(name, list = []) {
@@ -114,6 +107,14 @@ module3.linkedObject('object2', { name: 'Susie' }, {});
 
 console.log(module1.linkedObject('object1'));
 console.log(muuvyte.module('module1').linkedObject('object2'));
+
+var jeff = {
+    name: 'jeff'
+};
+
+var f = Object.create({}, jeff);
+
+console.log(jeff);
 
 //muuvyte.baseLinkedObject({item1: 'item1'});
 //console.log(muuvyte);
