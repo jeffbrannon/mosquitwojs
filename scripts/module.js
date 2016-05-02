@@ -1,7 +1,9 @@
 'use strict';
 
 (function(){
+
     var modules = [];
+
     var findLinkedObjectInModules = function(modules, objName, moduleName) {
         var result = [];
         for(var index in modules) {
@@ -13,6 +15,24 @@
         if(result.length === 0) muuvyte.throwError('linked object <' + objName + '> undefined');
         if(result.length > 1) muuvyte.throwError('linked object <' + objName + '> ambiguous');
         return result[0];
+    };
+
+    var findLinkedObjectInModule = function(module, objName) {
+        var result = findLinkedObjectInModules(module.$$linkedModules, objName, module.$$moduleName);
+            if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + objName + '> must be linked');
+            if(!result.$$instance) {
+                result.$$linkedObject.$$module = module;
+                var linkedTo = {};
+                if(result.$$params.linkedTo) {
+                    linkedTo = findLinkedObjectInModules(module.$$linkedModules, result.$$params.linkedTo, module.$$moduleName).$$linkedObject;
+                }
+                result.$$instance = Object.create(Object.assign(
+                    result.$$linkedObject,
+                    linkedTo,
+                    muuvyte.module(result.$$moduleName).$$baseObject,
+                    muuvyte.$$baseObject));
+            }
+            return result.$$instance;
     };
 
     var linkedObject = function(name, linkedObj, params = {}) {
@@ -28,20 +48,7 @@
             if(!this.$$linkedModules) {
                 this.$$linkedModules = linkedModules(this.$$moduleName);
             }
-            var result = findLinkedObjectInModules(this.$$linkedModules, name, this.$$moduleName);
-            if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
-            if(!result.$$instance) {
-                var linkedTo = {};
-                if(result.$$params.linkedTo) {
-                    linkedTo = findLinkedObjectInModules(this.$$linkedModules, result.$$params.linkedTo, this.$$moduleName).$$linkedObject;
-                }
-                result.$$instance = Object.create(Object.assign(
-                    result.$$linkedObject,
-                    linkedTo,
-                    muuvyte.module(result.$$moduleName).$$baseObject,
-                    muuvyte.$$baseObject));
-            }
-            return result.$$instance;
+            return findLinkedObjectInModule(this, name);
         }
     }
 
@@ -60,7 +67,8 @@
 
     var moduleInstance = {
         linkedObject: linkedObject,
-        baseLinkedObject: baseLinkedObject
+        baseLinkedObject: baseLinkedObject,
+        $findLinkedObjectInModule: findLinkedObjectInModule
     };
 
     var module = function(name, requires) {
