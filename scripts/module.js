@@ -1,3 +1,5 @@
+'use strict';
+
 (function(){
     var modules = [];
     var findLinkedObjectInModules = function(modules, objName, moduleName) {
@@ -88,38 +90,3 @@
     window['muuvyte'] = muuvyte;
 
 })();
-
-muuvyte.module('module1', ['module2', 'module3']);
-muuvyte.module('module2', []);
-muuvyte.module('module3', ['module4']);
-muuvyte.module('module4', []);
-
-
-var module1 = muuvyte.module('module1');
-module1.linkedObject('object1', { name: 'Jeff' }, { internal: true, linkedTo: 'object3' });
-
-var module3 = muuvyte.module('module3');
-module3.linkedObject('object2', { name: 'Susie' }, {});
-module3.linkedObject('object3', { surname: 'brannon' }, {toBeLinked: true});
-
-muuvyte.baseLinkedObject({item1: 'item1'});
-muuvyte.baseLinkedObject({item2: 'item2'});
-//console.log(muuvyte.$$baseObject);
-
-muuvyte.module('module1').baseLinkedObject({item3: 'item3'});
-muuvyte.module('module1').baseLinkedObject({item4: 'item4'});
-//console.log(muuvyte.module('module1').$$baseObject);
-
-muuvyte.module('module3').baseLinkedObject({item5: 'item5'});
-muuvyte.module('module3').baseLinkedObject({item6: 'item6'});
-//console.log(muuvyte.module('module3').$$baseObject);
-
-var f1 = module1.linkedObject('object1');
-console.log('module1-object1', f1);
-var f2 = module3.linkedObject('object2');
-console.log('module3-object2', f2);
-
-f2.__proto__.test = 'test';
-
-var f3 = module1.linkedObject('object2');
-console.log('module1-object2', f3);
