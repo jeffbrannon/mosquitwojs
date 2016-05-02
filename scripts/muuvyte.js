@@ -1,9 +1,5 @@
 (function(){
-
     var modules = [];
-
-    //var linkedObjectInstance = { };
-
     var findLinkedObjectInModules = function(modules, objName, moduleName) {
         var result = [];
         for(var index in modules) {
@@ -20,12 +16,6 @@
     var linkedObject = function(name, linkedObj, params = {}) {
         if(linkedObj) {
             if(this.$$linkedObjects[name] !== undefined) muuvyte.throwError('linked object <' + name + '> already defined');
-//            return this.$$linkedObjects[name] = Object.create(linkedObjectInstance, {
-//                $$linkedObjectName: { value: name },
-//                $$linkedObject: { value: linkedObj },
-//                $$params: { value: params }
-//            });
-
             this.$$linkedObjects[name] = {
                 $$linkedObjectName: name,
                 $$linkedObject: linkedObj,
@@ -33,16 +23,23 @@
                 $$moduleName: this.$$moduleName
             };
         } else {
-            if(!this.$$instance) {
-                if(!this.$$linkedModules) {
-                    this.$$linkedModules = linkedModules(this.$$moduleName);
-                }
-                var result = findLinkedObjectInModules(this.$$linkedModules, name, this.$$moduleName);
-                if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
-                var baseLink= {};
-                this.$$instance = Object.assign(baseLink, result.$$linkedObject);
+            if(!this.$$linkedModules) {
+                this.$$linkedModules = linkedModules(this.$$moduleName);
             }
-            return this.$$instance;
+            var result = findLinkedObjectInModules(this.$$linkedModules, name, this.$$moduleName);
+            if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + name + '> must be linked');
+            if(!result.$$instance) {
+                var linkedTo = {};
+                if(result.$$params.linkedTo) {
+                    linkedTo = findLinkedObjectInModules(this.$$linkedModules, result.$$params.linkedTo, this.$$moduleName).$$linkedObject;
+                }
+                result.$$instance = Object.create(Object.assign(
+                    result.$$linkedObject,
+                    linkedTo,
+                    muuvyte.module(result.$$moduleName).$$baseObject,
+                    muuvyte.$$baseObject));
+            }
+            return result.$$instance;
         }
     }
 
@@ -99,25 +96,30 @@ muuvyte.module('module4', []);
 
 
 var module1 = muuvyte.module('module1');
-module1.linkedObject('object1', { name: 'Jeff' }, { internal: true });
+module1.linkedObject('object1', { name: 'Jeff' }, { internal: true, linkedTo: 'object3' });
 
 var module3 = muuvyte.module('module3');
 module3.linkedObject('object2', { name: 'Susie' }, {});
+module3.linkedObject('object3', { surname: 'brannon' }, {toBeLinked: true});
 
+muuvyte.baseLinkedObject({item1: 'item1'});
+muuvyte.baseLinkedObject({item2: 'item2'});
+//console.log(muuvyte.$$baseObject);
 
-console.log(module1.linkedObject('object1'));
-console.log(muuvyte.module('module1').linkedObject('object2'));
+muuvyte.module('module1').baseLinkedObject({item3: 'item3'});
+muuvyte.module('module1').baseLinkedObject({item4: 'item4'});
+//console.log(muuvyte.module('module1').$$baseObject);
 
-var jeff = {
-    name: 'jeff'
-};
+muuvyte.module('module3').baseLinkedObject({item5: 'item5'});
+muuvyte.module('module3').baseLinkedObject({item6: 'item6'});
+//console.log(muuvyte.module('module3').$$baseObject);
 
-var f = Object.create({}, jeff);
+var f1 = module1.linkedObject('object1');
+console.log('module1-object1', f1);
+var f2 = module3.linkedObject('object2');
+console.log('module3-object2', f2);
 
-console.log(jeff);
+f2.__proto__.test = 'test';
 
-//muuvyte.baseLinkedObject({item1: 'item1'});
-//console.log(muuvyte);
-//muuvyte.module('module1').baseLinkedObject({item2: 'item2'});
-//console.log(muuvyte.module('module1'));
-
+var f3 = module1.linkedObject('object2');
+console.log('module1-object2', f3);
