@@ -14,9 +14,14 @@ muuvyte.module('module2', []);
 muuvyte.module('module3', ['module4']);
 muuvyte.module('module4', []);
 
-
 var module1 = muuvyte.module('module1');
-module1.linkedObject('object1', { name: 'Jeff' }, { internal: true, linkedTo: 'object3' });
+module1.linkedObject('object1', {
+    name: 'Jeff',
+//    constructor: function() {
+//        return muuvyte.$inject(this, ['object3', function(object3){}]);
+//    }
+    init: muuvyte.$inject(['object3', function(object3){}])
+}, {internal: true, linkedTo: 'object3'});
 
 var module3 = muuvyte.module('module3');
 module3.linkedObject('object2', { name: 'Susie' }, {});
@@ -43,6 +48,8 @@ f2.__proto__.test = 'test';
 
 var f3 = module1.linkedObject('object2');
 console.log('module1-object2', f3);
+
+        f1.init();
 
     </script>
 </body>
