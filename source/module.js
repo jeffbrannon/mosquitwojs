@@ -1,4 +1,4 @@
-var msqjs = (function () {
+var $msq = (function () {
     'use strict';
 
     var modules = [];
@@ -19,20 +19,20 @@ var msqjs = (function () {
 
     var findLinkedObjectInModule = function(module, objName) {
         var result = findLinkedObjectInModules(module.$$linkedModules, objName, module.$$moduleName);
-            if(result.$$params.toBeLinked) throw ('linked object <' + objName + '> must be linked');
-            if(!result.$$instance) {
-                result.$$linkedObject.$$module = module;
-                var linkedTo = {};
-                if(result.$$params.linkedTo) {
-                    linkedTo = findLinkedObjectInModules(module.$$linkedModules, result.$$params.linkedTo, module.$$moduleName).$$linkedObject;
-                }
-                result.$$instance = Object.create(Object.assign(
-                    result.$$linkedObject,
-                    linkedTo,
-                    msq.module(result.$$moduleName).$$baseObject,
-                    msq.$$baseObject));
+        if(result.$$params.toBeLinked) throw ('linked object <' + objName + '> must be linked');
+        if(!result.$$instance) {
+            result.$$linkedObject.$$module = module;
+            var linkedTo = {};
+            if(result.$$params.linkedTo) {
+                linkedTo = findLinkedObjectInModules(module.$$linkedModules, result.$$params.linkedTo, module.$$moduleName).$$linkedObject;
             }
-            return result.$$instance;
+            result.$$instance = Object.create(Object.assign(
+                result.$$linkedObject,
+                linkedTo,
+                msq.module(result.$$moduleName).$$baseObject,
+                msq.$$baseObject));
+        }
+        return result.$$instance;
     };
 
     var linkedObject = function(name, linkedObj, params) {
@@ -87,5 +87,4 @@ var msqjs = (function () {
     };
 
     return msq;
-
 })();

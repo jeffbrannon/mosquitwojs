@@ -9,41 +9,37 @@ MosquitwoJS Demo
     <script type="text/javascript">
         "use strict";
 
-msqjs.module('module1', ['module2', 'module3']);
-msqjs.module('module2', []);
-msqjs.module('module3', ['module4']);
-msqjs.module('module4', []);
+        $msq.module('module1', ['module2', 'module3']);
+        $msq.module('module2', []);
+        $msq.module('module3', ['module4']);
+        $msq.module('module4', []);
 
-var module1 = msqjs.module('module1');
-module1.linkedObject('object1', {
-    name: 'Jeff',
-    init: msqjs.$inject(['object3', function(object3){}])
-}, {internal: true, linkedTo: 'object3'});
+        var module1 = $msq.module('module1');
+        module1.linkedObject('object1', {
+            name: 'Jeff',
+            init: $msq.$inject(['object3', function(object3){}])
+        }, {internal: true, linkedTo: 'object3'});
 
-var module3 = msqjs.module('module3');
-module3.linkedObject('object2', { name: 'Susie' }, {});
-module3.linkedObject('object3', { surname: 'brannon' }, {toBeLinked: true});
+        var module3 = $msq.module('module3');
+        module3.linkedObject('object2', { name: 'Susie' }, {});
+        module3.linkedObject('object3', {
+            surname: 'brannon',
+            init3: $msq.$inject(['object3', function(object3){}])
+        }, {toBeLinked: true});
 
-msqjs.baseLinkedObject({item1: 'item1'});
-msqjs.baseLinkedObject({item2: 'item2'});
+        $msq.baseLinkedObject({item1: 'item1'});
+        $msq.baseLinkedObject({item2: 'item2'});
 
-msqjs.module('module1').baseLinkedObject({item3: 'item3'});
-msqjs.module('module1').baseLinkedObject({item4: 'item4'});
+        $msq.module('module1').baseLinkedObject({item3: 'item3'});
+        $msq.module('module1').baseLinkedObject({item4: 'item4'});
 
-msqjs.module('module3').baseLinkedObject({item5: 'item5'});
-msqjs.module('module3').baseLinkedObject({item6: 'item6'});
+        $msq.module('module3').baseLinkedObject({item5: 'item5'});
+        $msq.module('module3').baseLinkedObject({item6: 'item6'});
 
-var f1 = module1.linkedObject('object1');
-console.log('module1-object1', f1);
-var f2 = module3.linkedObject('object2');
-console.log('module3-object2', f2);
-
-f2.__proto__.test = 'test';
-
-var f3 = module1.linkedObject('object2');
-console.log('module1-object2', f3);
-
+        var f1 = module1.linkedObject('object1');
         f1.init();
+        f1.init3();
+
 
     </script>
 </body>

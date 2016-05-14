@@ -1,4 +1,4 @@
-var msqjs = msqjs || {};
+var $msq = $msq || {};
 
 (function(msq){
     'use strict';
@@ -10,7 +10,7 @@ var msqjs = msqjs || {};
 
     msq.baseLinkedObject({
         $inject: function(injection) {
-            //console.log(this, injection);
+            console.log(this, injection);
         }
     });
-})(msqjs);
+})($msq);
