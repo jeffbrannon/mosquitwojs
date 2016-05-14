@@ -1,25 +1,25 @@
-'use strict';
-
-(function(){
+var msqjs = (function () {
+    'use strict';
 
     var modules = [];
+    var msq = {};
 
-    var findLinkedObjectInModules = function(modules, objName, moduleName) {
+    var findLinkedObjectInModules = function (modules, objName, moduleName) {
         var result = [];
-        for(var index in modules) {
+        for (var index in modules) {
             var obj = modules[index].$$linkedObjects[objName];
             if(obj && !((modules[index].$$moduleName != moduleName) && obj.$$params.internal)) {
                 result.push(obj);
             }
         }
-        if(result.length === 0) muuvyte.throwError('linked object <' + objName + '> undefined');
-        if(result.length > 1) muuvyte.throwError('linked object <' + objName + '> ambiguous');
+        if(result.length === 0) throw ('linked object <' + objName + '> undefined');
+        if(result.length > 1) throw ('linked object <' + objName + '> ambiguous');
         return result[0];
     };
 
     var findLinkedObjectInModule = function(module, objName) {
         var result = findLinkedObjectInModules(module.$$linkedModules, objName, module.$$moduleName);
-            if(result.$$params.toBeLinked) muuvyte.throwError('linked object <' + objName + '> must be linked');
+            if(result.$$params.toBeLinked) throw ('linked object <' + objName + '> must be linked');
             if(!result.$$instance) {
                 result.$$linkedObject.$$module = module;
                 var linkedTo = {};
@@ -29,19 +29,19 @@
                 result.$$instance = Object.create(Object.assign(
                     result.$$linkedObject,
                     linkedTo,
-                    muuvyte.module(result.$$moduleName).$$baseObject,
-                    muuvyte.$$baseObject));
+                    msq.module(result.$$moduleName).$$baseObject,
+                    msq.$$baseObject));
             }
             return result.$$instance;
     };
 
-    var linkedObject = function(name, linkedObj, params = {}) {
+    var linkedObject = function(name, linkedObj, params) {
         if(linkedObj) {
-            if(this.$$linkedObjects[name] !== undefined) muuvyte.throwError('linked object <' + name + '> already defined');
+            if(this.$$linkedObjects[name] !== undefined) throw ('linked object <' + name + '> already defined');
             this.$$linkedObjects[name] = {
                 $$linkedObjectName: name,
                 $$linkedObject: linkedObj,
-                $$params: params,
+                $$params: params || {},
                 $$moduleName: this.$$moduleName
             };
         } else {
@@ -50,51 +50,42 @@
             }
             return findLinkedObjectInModule(this, name);
         }
-    }
+    };
 
-    var linkedModules = function(name, list = []) {
+    var linkedModules = function(name, list) {
+        list = list || [];
         list.push(modules[name]);
         var requires = modules[name].$$moduleRequires;
         for(var propt in requires) {
             list = linkedModules(requires[propt], list);
         }
         return list;
-    }
+    };
 
-    var baseLinkedObject = function(baseObject) {
+    msq.baseLinkedObject = function(baseObject) {
         this.$$baseObject = Object.assign(this.$$baseObject || {}, baseObject);
     };
 
     var moduleInstance = {
         linkedObject: linkedObject,
-        baseLinkedObject: baseLinkedObject,
+        baseLinkedObject: msq.baseLinkedObject,
         $findLinkedObjectInModule: findLinkedObjectInModule
     };
 
-    var module = function(name, requires) {
+    msq.module = function(name, requires) {
         if(requires) {
-            if(!Array.isArray(requires)) muuvyte.throwError('<requires> must be of type array');
-            if(modules[name] !== undefined) muuvyte.throwError('module <' + name + '> already defined');
+            if(!Array.isArray(requires)) throw ('<requires> must be of type array');
+            if(modules[name] !== undefined) throw ('module <' + name + '> already defined');
             modules[name] = Object.create(moduleInstance, {
                 $$moduleName: { value: name },
                 $$moduleRequires: { value: requires },
                 $$linkedObjects: { value: [] }
             });
         }
-        if(modules[name] === undefined) muuvyte.throwError('module <' + name + '> undefined');
+        if(modules[name] === undefined) throw ('module <' + name + '> undefined');
         return modules[name];
     };
 
-    var throwError = function(message) {
-        throw message;
-    }
-
-    var muuvyte = {
-        module: module,
-        baseLinkedObject: baseLinkedObject,
-        throwError: throwError
-    };
-
-    window['muuvyte'] = muuvyte;
+    return msq;
 
 })();
