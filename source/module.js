@@ -76,11 +76,11 @@ var $msq = (function () {
         if(requires) {
             if(!Array.isArray(requires)) throw ('<requires> must be of type array');
             if(modules[name] !== undefined) throw ('module <' + name + '> already defined');
-            modules[name] = Object.create(moduleInstance, {
-                $$moduleName: { value: name },
-                $$moduleRequires: { value: requires },
-                $$linkedObjects: { value: [] }
-            });
+            modules[name] = Object.create(Object.assign({}, moduleInstance, {
+                $$moduleName: name,
+                $$moduleRequires: requires,
+                $$linkedObjects: []
+            }));
         }
         if(modules[name] === undefined) throw ('module <' + name + '> undefined');
         return modules[name];

@@ -10,7 +10,10 @@ var $msq = $msq || {};
 
     msq.baseLinkedObject({
         $inject: function(injection) {
-            console.log(this, injection);
+            var module = this.$$module
+            var f = module.$findLinkedObjectInModule(module, 'object3');
+
+            console.log(f, injection);
         }
     });
 })($msq);
