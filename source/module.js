@@ -18,19 +18,25 @@ var $msq = (function () {
     };
 
     var findLinkedObjectInModule = function(module, objName) {
+
+        if(!module.$$linkedModules) {
+            module.$$linkedModules = linkedModules(module.$$moduleName);
+        }
+
         var result = findLinkedObjectInModules(module.$$linkedModules, objName, module.$$moduleName);
         if(result.$$params.toBeLinked) throw ('linked object <' + objName + '> must be linked');
         if(!result.$$instance) {
-            result.$$linkedObject.$$module = module;
             var linkedTo = {};
             if(result.$$params.linkedTo) {
                 linkedTo = findLinkedObjectInModules(module.$$linkedModules, result.$$params.linkedTo, module.$$moduleName).$$linkedObject;
             }
             result.$$instance = Object.create(Object.assign(
-                result.$$linkedObject,
-                linkedTo,
+                {},
+                msq.$$baseObject,
                 msq.module(result.$$moduleName).$$baseObject,
-                msq.$$baseObject));
+                linkedTo,
+                result.$$linkedObject
+            ));
         }
         return result.$$instance;
     };
@@ -38,6 +44,7 @@ var $msq = (function () {
     var linkedObject = function(name, linkedObj, params) {
         if(linkedObj) {
             if(this.$$linkedObjects[name] !== undefined) throw ('linked object <' + name + '> already defined');
+            linkedObj.$$module = this;
             this.$$linkedObjects[name] = {
                 $$linkedObjectName: name,
                 $$linkedObject: linkedObj,
@@ -45,9 +52,6 @@ var $msq = (function () {
                 $$moduleName: this.$$moduleName
             };
         } else {
-            if(!this.$$linkedModules) {
-                this.$$linkedModules = linkedModules(this.$$moduleName);
-            }
             return findLinkedObjectInModule(this, name);
         }
     };
