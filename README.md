@@ -111,6 +111,6 @@ module.baseLinkedObject({
 });
 ```
 
-## Obaervable Interface Linked Objects
+## Observable Interface Linked Objects
 
 under development - due shortly
