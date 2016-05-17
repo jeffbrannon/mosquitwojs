@@ -13,7 +13,7 @@ var $msq = $msq || {};
             toBeArray = [toBeArray];
         }
         return toBeArray;
-    }
+    };
 
     msq.baseLinkedObject({
         $inject: function(injection) {
