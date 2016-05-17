@@ -8,10 +8,23 @@ var $msq = $msq || {};
         };
     };
 
+    var asArray = function(toBeArray) {
+        if(toBeArray instanceof Array === false) {
+            toBeArray = [toBeArray];
+        }
+        return toBeArray;
+    }
+
     msq.baseLinkedObject({
         $inject: function(injection) {
+            injection =  asArray(injection);
+            var method = injection.pop();
+            var linkedObjects = [];
             var module = this.$$module;
-            var f = module.$findLinkedObjectInModule(module, 'object3');
+            for(var i=0; i<injection.length; i++) {
+                linkedObjects.push(module.$findLinkedObjectInModule(module, injection[i]));
+            }
+            return method.apply(this, linkedObjects);
         }
     });
 })($msq);
