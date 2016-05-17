@@ -1,6 +1,6 @@
 {
     "name": "mosquitwojs",
-    "description": "A light modular JavaScript dependency injection library based on linked objects",
+    "description": "A JavaScript modular library utilising OLOO (objects-linked-to-other-objects) and dependency injection",
     "main": "dist/mosquitwo.min.js",
     "keywords": [
         "dependency",
