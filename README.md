@@ -110,3 +110,7 @@ module.baseLinkedObject({
     modularBaseItem1: 'item1'
 });
 ```
+
+## Obaervable Interface Linked Objects
+
+under development - due shortly
