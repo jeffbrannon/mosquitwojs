@@ -1,10 +1,24 @@
-/*! mosquitojs - v0.0.1 - 2016-05-20
+/*! mosquitwojs - v0.0.2 - 2016-05-20
 * Copyright (c) 2016 Jeff Brannon; Licensed MIT */
 var $msq = (function () {
     'use strict';
 
     var modules = [];
     var msq = {};
+
+    msq.extension = {
+        moduleExtend: {},
+        paramExtend: {}
+    };
+
+    var parameterExtension = function(result) {
+        for(var key in msq.extension.paramExtend) {
+            var paramValue = result.$$params[key];
+            if(paramValue) {
+                msq.extension.paramExtend[key](paramValue, result.$$linkedObject, result.$$instance);
+            }
+        }
+    };
 
     var findLinkedObjectInModules = function (modules, objName, moduleName) {
         var result = [];
@@ -39,6 +53,7 @@ var $msq = (function () {
                 linkedTo,
                 result.$$linkedObject
             ));
+            parameterExtension(result);
         }
         return result.$$instance;
     };
@@ -47,6 +62,7 @@ var $msq = (function () {
         if(linkedObj) {
             if(this.$$linkedObjects[name] !== undefined) { throw ('linked object <' + name + '> already defined'); }
             linkedObj.$$module = this;
+            linkedObj.$$name = name;
             this.$$linkedObjects[name] = {
                 $$linkedObjectName: name,
                 $$linkedObject: linkedObj,
@@ -82,7 +98,7 @@ var $msq = (function () {
         if(requires) {
             if(!Array.isArray(requires)) { throw ('<requires> must be of type array'); }
             if(modules[name] !== undefined) { throw ('module <' + name + '> already defined'); }
-            modules[name] = Object.create(Object.assign({}, moduleInstance, {
+            modules[name] = Object.create(Object.assign({}, moduleInstance, msq.extension.moduleExtend, {
                 $$moduleName: name,
                 $$moduleRequires: requires,
                 $$linkedObjects: []
@@ -94,7 +110,6 @@ var $msq = (function () {
 
     return msq;
 })();
-
 var $msq = $msq || {};
 
 (function(msq){
@@ -124,4 +139,52 @@ var $msq = $msq || {};
             return method.apply(this, linkedObjects);
         }
     });
+})($msq);
+var $msq = $msq || {};
+
+(function(msq){
+    'use strict';
+
+    var observableMethods = [];
+
+    var observe = function(linkedObjectName, methodName, method) {
+        if(!observableMethods[methodName]) {
+                observableMethods[methodName] = [];
+            }
+            observableMethods[methodName].push({
+                linkedObjectName: linkedObjectName,
+                method: method
+            });
+    };
+
+    msq.extension.paramExtend.observableMethods = function(methods, linkedObject, result) {
+        if(methods instanceof Array === false) {
+            methods = [methods];
+        }
+        for(var index in methods) {
+            observe(linkedObject.$$name, methods[index], result[methods[index]]);
+        }
+    };
+
+    msq.baseLinkedObject({
+        $next: function(methodName, param) {
+            for(var index in observableMethods[methodName]) {
+                var method = observableMethods[methodName][index].method;
+                method(param);
+            }
+        },
+        $observe: function(linkedObjectName, methodName) {
+            observe(linkedObjectName, methodName, this[methodName]);
+        },
+        $unobserve: function(linkedObjectName, methodName) {
+            var methodData = observableMethods[methodName];
+            for(var index in methodData) {
+                if(methodData[index].linkedObjectName === linkedObjectName) {
+                    methodData.splice(index, 1);
+                    break;
+                }
+            }
+        }
+    });
+
 })($msq);

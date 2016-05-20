@@ -15,7 +15,8 @@ module.exports = function(grunt) {
           options : {banner : '<%= banner %>', stripBanners : true},
           dist : {src : [
               'source/module.js',
-              'source/injector.js'
+              'source/injector.js',
+              'source/observableMethods.js'
           ], dest : 'dist/mosquitwo.js'}
         },
         uglify : {

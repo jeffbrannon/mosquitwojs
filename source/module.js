@@ -4,6 +4,20 @@ var $msq = (function () {
     var modules = [];
     var msq = {};
 
+    msq.extension = {
+        moduleExtend: {},
+        paramExtend: {}
+    };
+
+    var parameterExtension = function(result) {
+        for(var key in msq.extension.paramExtend) {
+            var paramValue = result.$$params[key];
+            if(paramValue) {
+                msq.extension.paramExtend[key](paramValue, result.$$linkedObject, result.$$instance);
+            }
+        }
+    };
+
     var findLinkedObjectInModules = function (modules, objName, moduleName) {
         var result = [];
         for (var index in modules) {
@@ -37,6 +51,7 @@ var $msq = (function () {
                 linkedTo,
                 result.$$linkedObject
             ));
+            parameterExtension(result);
         }
         return result.$$instance;
     };
@@ -45,6 +60,7 @@ var $msq = (function () {
         if(linkedObj) {
             if(this.$$linkedObjects[name] !== undefined) { throw ('linked object <' + name + '> already defined'); }
             linkedObj.$$module = this;
+            linkedObj.$$name = name;
             this.$$linkedObjects[name] = {
                 $$linkedObjectName: name,
                 $$linkedObject: linkedObj,
@@ -80,7 +96,7 @@ var $msq = (function () {
         if(requires) {
             if(!Array.isArray(requires)) { throw ('<requires> must be of type array'); }
             if(modules[name] !== undefined) { throw ('module <' + name + '> already defined'); }
-            modules[name] = Object.create(Object.assign({}, moduleInstance, {
+            modules[name] = Object.create(Object.assign({}, moduleInstance, msq.extension.moduleExtend, {
                 $$moduleName: name,
                 $$moduleRequires: requires,
                 $$linkedObjects: []
