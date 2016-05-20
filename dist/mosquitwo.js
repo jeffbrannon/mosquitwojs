@@ -1,4 +1,4 @@
-/*! mosquitojs - v0.0.1 - 2016-05-17
+/*! mosquitojs - v0.0.1 - 2016-05-20
 * Copyright (c) 2016 Jeff Brannon; Licensed MIT */
 var $msq = (function () {
     'use strict';

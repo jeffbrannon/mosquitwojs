@@ -20,7 +20,7 @@ module.exports = function(grunt) {
         },
         uglify : {
           options : {banner : '<%= banner %>'},
-          dist : {src : '<%= concat.dist.dest %>', dest : 'dist/mosquito.min.js'}
+          dist : {src : '<%= concat.dist.dest %>', dest : 'dist/mosquitwo.min.js'}
         },
         jshint : {
             options : {
