@@ -60,7 +60,8 @@ module.linkedObject('object2', {
 }, {
     internal: true,
     toBeLinked: true,
-    linkedTo: 'object3'
+    linkedTo: 'object3',
+    observableMethods: ['method1', 'method2']
 });
 ```
 ### Linked Object Parameters Definitions
@@ -70,6 +71,9 @@ When accessing the defined object, it will be linked to this linked object
 The linked object can not be directly accessed. It must be linked to another linked object.
 #### internal
 The linked object can only be accessed from within another linked objected within the same module.
+#### observableMethods
+Register methods to be observed and executed by executing the $next method.
+See Observable Methods below
 
 ## Dependency Injection
 
@@ -111,6 +115,22 @@ module.baseLinkedObject({
 });
 ```
 
-## Observable Interface Linked Objects
+## Observable Methods
+Observable Methods permit many functions, across many linkedObjects, with the same name to be executed by just calling the $next method. Methods must be registered and an instance of the hosting linked object created, before the method will be called.
 
-under development - due shortly
+### Registering Observable Methods
+This can either be done using the params option as stated above or by using the $observe method from within a linked object.
+```bash
+$observe(linkedObjectName, methodName);
+```
+
+### Unregistering Observable Methods
+This can only be done using the $unobserve method from within a linked object.
+```bash
+$unobserve(linkedObjectName, methodName);
+```
+### Executing Observable Methods
+This will execute all registered instances of the specified method.
+```bash
+$next(methodName, optional parameter);
+```
